@@ -1,0 +1,28 @@
+name: My First DevOps Pipeline
+on: [push]  # WHAT HAPPENS: This triggers the robot every time you "push" code to GitHub.
+
+jobs:
+  automation-job:
+    runs-on: ubuntu-latest # WHAT HAPPENS: GitHub gives you a free Linux computer in the cloud.
+    steps:
+      - name: Copy My Code
+        uses: actions/checkout@v4 # WHAT HAPPENS: The robot "downloads" your code onto that Linux computer.
+
+      - name: Setup Python
+        uses: actions/setup-python@v4 # WHAT HAPPENS: It installs Python so it can run your scripts.
+        with:
+          python-version: '3.10'
+
+      - name: Install Tools
+        run: pip install fastapi uvicorn requests # WHAT HAPPENS: It installs the libraries you used in your screenshot.
+
+      - name: Start the Server
+        # WHAT HAPPENS: It starts your API. The "&" means "run this in the background" 
+        # so the robot can move to the next step while the server is still alive.
+        run: |
+          python -m uvicorn apiserver:app --host 0.0.0.0 --port 8000 &
+          sleep 5
+
+      - name: Run My Tests
+        # WHAT HAPPENS: This runs your testAutomation.py to check if the API works.
+        run: python testAutomation.py
