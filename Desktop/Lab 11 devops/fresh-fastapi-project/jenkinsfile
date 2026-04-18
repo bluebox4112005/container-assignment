@@ -1,0 +1,43 @@
+pipeline {
+    agent any
+
+    environment {
+        // This links to the secret you created in Jenkins
+        DOCKERHUB_CREDS = credentials('dockerhub-credentials')
+        IMAGE_NAME = 'kartikeya0411/fastapi-app'
+        TAG = 'latest'
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                echo 'Building the image...'
+                sh "docker build -t ${IMAGE_NAME}:${TAG} ."
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                echo 'Logging into Docker Hub...'
+                sh "echo ${DOCKERHUB_CREDS_PSW} | docker login -u ${DOCKERHUB_CREDS_USR} --password-stdin"
+                
+                echo 'Pushing image...'
+                sh "docker push ${IMAGE_NAME}:${TAG}"
+            }
+        }
+    }
+    
+    post {
+        always {
+            echo 'Cleaning up local images to save space...'
+            sh "docker rmi ${IMAGE_NAME}:${TAG} || true"
+            sh "docker logout" 
+        }
+    }
+}
